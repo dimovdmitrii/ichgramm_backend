@@ -1,5 +1,9 @@
-const user = "user";
+import "dotenv/config";
+import startServer from "./server.js";
+import connectDatabase from "./db/connectDatabase.js";
 
-if (user === "user") {
-  console.log("welcome");
-}
+const bootstrap = async () => {
+  await connectDatabase();
+  startServer();
+};
+bootstrap();
