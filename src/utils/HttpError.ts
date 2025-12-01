@@ -1,4 +1,4 @@
-const messageList = {
+const messageList: Record<number, string> = {
   400: "Bad Request",
   401: "Unauthorized",
   403: "Forbidden",
@@ -10,7 +10,7 @@ import { ResponseError } from "../types/interfaces.js";
 
 const HttpError = (
   status: number,
-  message = messageList[status],
+  message = messageList[status] || "Server error",
 ): ResponseError => {
   const error = new Error(message) as ResponseError;
   error.status = status;

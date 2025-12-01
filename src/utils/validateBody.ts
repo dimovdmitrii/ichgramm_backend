@@ -1,12 +1,15 @@
-import { ZodSchema } from "zod/v3";
+import { z } from "zod";
 
 import HttpError from "./HttpError.js";
 
-const validateBody = (schema: ZodSchema, body: unknown) => {
-  const { error } = schema.safeParse(body);
-  if (error) {
-    const { message } = JSON.parse(error.message)[0];
-    throw HttpError(400, message);
+const validateBody = (schema: z.ZodSchema, body: unknown) => {
+  const result = schema.safeParse(body);
+  if (!result.success) {
+    const firstError = result.error.issues[0];
+    if (firstError) {
+      throw HttpError(400, firstError.message || "Validation error");
+    }
+    throw HttpError(400, "Validation error");
   }
   return true;
 };

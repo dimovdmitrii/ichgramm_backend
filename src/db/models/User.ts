@@ -58,9 +58,9 @@ const userSchema = new Schema(
 
 userSchema.post("save", handleSaveError);
 
-userSchema.pre("findOneAndUpdate", setUpdateSettings);
+userSchema.pre("findOneAndUpdate" as any, setUpdateSettings);
 
-userSchema.post("findOneAndUpdate", handleSaveError);
+userSchema.post("findOneAndUpdate" as any, handleSaveError);
 
 const User = model<UserDocument>("user", userSchema);
 
