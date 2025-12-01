@@ -1,4 +1,5 @@
 import { Schema, model, Document } from "mongoose";
+
 import { emailRegexp, usernameRegexp } from "../../constants/auth.constants.js";
 
 import { handleSaveError, setUpdateSettings } from "../hooks.js";
