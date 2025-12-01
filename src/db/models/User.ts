@@ -10,8 +10,8 @@ export interface UserDocument extends Document {
   username: string;
   password: string;
   verify: boolean;
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,11 +48,9 @@ const userSchema = new Schema(
     },
     accessToken: {
       type: String,
-      required: true,
     },
     refreshToken: {
       type: String,
-      required: true,
     },
   },
   { versionKey: false, timestamps: true },

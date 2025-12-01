@@ -48,8 +48,8 @@ export const loginSchema = z.object({
 
   password: z
     .string()
-    .min(8, "Password must have at least 8 characters")
-    .regex(passwordRegexp, "Password must have least 1 letter and 1 number"),
+    .min(1, "Password is required"),
+  
 });
 
 export type LoginPayload = z.infer<typeof loginSchema>;
