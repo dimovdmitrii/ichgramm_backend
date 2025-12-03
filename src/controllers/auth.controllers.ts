@@ -30,8 +30,13 @@ export const loginController = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  validateBody(loginSchema, req.body);
-  const result = await loginUser(req.body);
+  const normalizedBody = {
+    username: req.body.email || req.body.username,
+    password: req.body.password,
+  };
+  
+  validateBody(loginSchema, normalizedBody);
+  const result = await loginUser(normalizedBody);
 
   res.status(200).json(result);
 };

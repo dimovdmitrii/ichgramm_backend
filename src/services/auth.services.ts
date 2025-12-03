@@ -1,5 +1,3 @@
-
-
 import jwt from "jsonwebtoken";
 
 import bcrypt from "bcrypt";
@@ -19,8 +17,6 @@ const { JWT_SECRET } = process.env;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET not define in environment variables");
 }
-
-type UserFindResult = UserDocument | null;
 
 export interface LoginResult {
   accessToken: string;
@@ -46,21 +42,13 @@ export const registerUser = async (
 export const loginUser = async (
   payload: LoginPayload,
 ): Promise<LoginResult> => {
- 
-  const user: UserFindResult = await User.findOne({
+  const user = await User.findOne({
     $or: [{ username: payload.username }, { email: payload.username }],
   });
-
   if (!user) throw HttpError(401, "User not found");
-
-  const passwordCompare: boolean = await bcrypt.compare(
-    payload.password,
-    user.password,
-  );
+  const passwordCompare = await bcrypt.compare(payload.password, user.password);
   if (!passwordCompare) throw HttpError(401, "Password invalid!");
-  const tokenPayload = {
-    id: user._id.toString(),
-  };
+  const tokenPayload = { id: user._id.toString() };
 
   const accessToken: string = jwt.sign(tokenPayload, JWT_SECRET, {
     expiresIn: "15m",
@@ -68,14 +56,13 @@ export const loginUser = async (
   const refreshToken: string = jwt.sign(tokenPayload, JWT_SECRET, {
     expiresIn: "7d",
   });
+
   await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
 
   return {
     accessToken,
     refreshToken,
-    user: {
-      email: user.email,
-    },
+    user: { email: user.email },
   };
 };
 
