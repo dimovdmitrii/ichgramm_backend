@@ -36,7 +36,7 @@ export const loginSchema = z.object({
     .string()
     .min(1)
     .refine(
-      (value) => {    
+      (value) => {
         const isEmail = emailRegexp.test(value);
         const isUsername = usernameRegexp.test(value);
         return isEmail || isUsername;
@@ -46,10 +46,7 @@ export const loginSchema = z.object({
       },
     ),
 
-  password: z
-    .string()
-    .min(1, "Password is required"),
-  
+  password: z.string().min(1, "Password is required"),
 });
 
 export type LoginPayload = z.infer<typeof loginSchema>;
@@ -70,3 +67,8 @@ export const resetSchema = z.object({
     ),
 });
 export type ResetPayload = z.infer<typeof resetSchema>;
+
+export const refreshSchema = z.object({
+  refreshToken: z.string().min(1, "Refresh token is required"),
+});
+export type RefreshPayload = z.infer<typeof refreshSchema>;
