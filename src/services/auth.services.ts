@@ -1,16 +1,17 @@
 import bcrypt from "bcrypt";
-import { Types } from "mongoose";
+
 import {
   RegisterPayload,
   LoginPayload,
-  ResetPayload,
+  RefreshPayload,
 } from "../schemas/auth.schemas.js";
 
 import HttpError from "../utils/HttpError.js";
 
 import User, { UserDocument } from "../db/models/User.js";
 
-import { generateToken, verifyToken } from "../utils/jwt.js";
+import { verifyToken } from "../utils/jwt.js";
+import createTokens from "../utils/createTokens.js";
 
 export type UserFindResult = UserDocument | null;
 
@@ -23,13 +24,6 @@ export interface LoginResult {
     username: string;
   };
 }
-
-export const createTokens = (id: Types.ObjectId) => {
-  const idString = id.toString();
-  const accessToken = generateToken({ id: idString }, { expiresIn: "15m" });
-  const refreshToken = generateToken({ id: idString }, { expiresIn: "15d" });
-  return { accessToken, refreshToken };
-};
 
 //@ts-expect-error
 export const findUser = (query) => User.findOne(query);
@@ -73,17 +67,18 @@ export const loginUser = async (
 };
 
 export const refreshUser = async (
-  refreshToken: string,
+  payload: RefreshPayload,
 ): Promise<LoginResult> => {
-  const { data: payload, error } = verifyToken(refreshToken);
+  const { data: tokenPayload, error } = verifyToken(payload.refreshToken);
 
   if (error) throw HttpError(401, "Invalid refresh token");
-  if (!payload || !payload.id) throw HttpError(401, "Invalid token payload");
+  if (!tokenPayload || !tokenPayload.id)
+    throw HttpError(401, "Invalid token payload");
 
-  const user: UserFindResult = await findUser({ _id: payload.id });
+  const user: UserFindResult = await findUser({ _id: tokenPayload.id });
   if (!user) throw HttpError(401, "User not found");
 
-  if (user.refreshToken !== refreshToken) {
+  if (user.refreshToken !== payload.refreshToken) {
     throw HttpError(401, "Refresh token mismatch");
   }
 

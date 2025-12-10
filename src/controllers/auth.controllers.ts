@@ -14,7 +14,7 @@ import {
   refreshSchema,
 } from "../schemas/auth.schemas.js";
 
-import { createTokens } from "../services/auth.services.js";
+import createTokens from "../utils/createTokens.js";
 
 import { AuthRequest } from "../types/interfaces.js";
 
@@ -69,7 +69,7 @@ export const refreshController = async (
   res: Response,
 ): Promise<void> => {
   validateBody(refreshSchema, req.body);
-  const result = await refreshUser(req.body.refreshToken);
+  const result = await refreshUser(req.body);
 
   res.status(200).json(result);
 };
