@@ -26,8 +26,8 @@ export interface LoginResult {
 
 export const createTokens = (id: Types.ObjectId) => {
   const idString = id.toString();
-  const accessToken = generateToken({ id: idString }, { expiresIn: "15s" });
-  const refreshToken = generateToken({ id: idString }, { expiresIn: "17s" });
+  const accessToken = generateToken({ id: idString }, { expiresIn: "15m" });
+  const refreshToken = generateToken({ id: idString }, { expiresIn: "15d" });
   return { accessToken, refreshToken };
 };
 
