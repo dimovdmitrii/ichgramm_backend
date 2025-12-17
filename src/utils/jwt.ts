@@ -2,6 +2,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 
 interface JWTPayload {
   id: string;
+  username?: string;
 }
 
 type JWTSettings = SignOptions | undefined;
@@ -33,4 +34,9 @@ export const verifyToken = (token: string): VerifyTokenResult => {
     const resultError = new Error("Token error");
     return { data: null, error: resultError };
   }
+};
+
+export const verifyAccessToken = (token: string): JWTPayload | null => {
+  const { data } = verifyToken(token);
+  return data;
 };

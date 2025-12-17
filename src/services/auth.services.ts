@@ -51,7 +51,7 @@ export const loginUser = async (
   const passwordCompare = await bcrypt.compare(payload.password, user.password);
   if (!passwordCompare) throw HttpError(401, "Password invalid!");
 
-  const { accessToken, refreshToken } = createTokens(user._id);
+  const { accessToken, refreshToken } = createTokens(user._id, user.username);
 
   await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
 
@@ -83,7 +83,7 @@ export const refreshUser = async (
   }
 
   const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-    createTokens(user._id);
+    createTokens(user._id, user.username);
 
   await User.findByIdAndUpdate(user._id, {
     accessToken: newAccessToken,

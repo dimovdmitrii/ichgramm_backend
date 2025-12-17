@@ -49,7 +49,10 @@ export const loginController = async (
 
 export const getCurrentController: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
-  const { accessToken, refreshToken } = createTokens(authReq.user._id);
+  const { accessToken, refreshToken } = createTokens(
+    authReq.user._id,
+    authReq.user.username,
+  );
 
   await User.findByIdAndUpdate(authReq.user._id, { accessToken, refreshToken });
 
