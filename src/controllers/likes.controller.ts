@@ -1,8 +1,10 @@
 import { Response } from "express";
-import { toggleLike, getLikesByPost, getUserLikes } from "../services/likes.services.js";
+import {
+  toggleLike,
+  getLikesByPost,
+  getUserLikes,
+} from "../services/likes.services.js";
 import { AuthRequest } from "../types/interfaces.js";
-import validateBody from "../utils/validateBody.js";
-import { createLikeSchema } from "../schemas/like.schema.js";
 
 export const toggleLikeController = async (
   req: AuthRequest,
@@ -37,4 +39,3 @@ export const getUserLikesController = async (
   const result = await getUserLikes(req.user._id);
   res.json(result);
 };
-

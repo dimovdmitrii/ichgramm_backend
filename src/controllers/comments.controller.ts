@@ -7,7 +7,10 @@ import {
 } from "../services/comments.services.js";
 import { AuthRequest } from "../types/interfaces.js";
 import validateBody from "../utils/validateBody.js";
-import { createCommentSchema, updateCommentSchema } from "../schemas/comment.schema.js";
+import {
+  createCommentSchema,
+  updateCommentSchema,
+} from "../schemas/comment.schema.js";
 
 export const addCommentController = async (
   req: AuthRequest,
@@ -19,10 +22,10 @@ export const addCommentController = async (
     return;
   }
   validateBody(createCommentSchema, { ...req.body, postId });
-  const result = await addComment({ 
-    postId, 
-    content: req.body.content, 
-    userId: req.user._id 
+  const result = await addComment({
+    postId,
+    content: req.body.content,
+    userId: req.user._id,
   });
   res.status(201).json(result);
 };
@@ -52,7 +55,9 @@ export const updateCommentController = async (
   validateBody(updateCommentSchema, req.body);
   const result = await updateComment(id, req.user._id, req.body);
   if (!result) {
-    res.status(404).json({ message: "Comment not found or you don't have permission to update it" });
+    res.status(404).json({
+      message: "Comment not found or you don't have permission to update it",
+    });
     return;
   }
   res.json(result);
@@ -69,7 +74,9 @@ export const deleteCommentController = async (
   }
   const result = await deleteComment(id, req.user._id);
   if (!result) {
-    res.status(404).json({ message: "Comment not found or you don't have permission to delete it" });
+    res.status(404).json({
+      message: "Comment not found or you don't have permission to delete it",
+    });
     return;
   }
   res.status(204).send();
