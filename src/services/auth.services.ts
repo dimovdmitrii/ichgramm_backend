@@ -12,6 +12,7 @@ import User, { UserDocument } from "../db/models/User.js";
 
 import { verifyToken } from "../utils/jwt.js";
 import createTokens from "../utils/createTokens.js";
+import { getUserStats } from "./users.services.js";
 
 export type UserFindResult = UserDocument | null;
 
@@ -19,9 +20,16 @@ export interface LoginResult {
   accessToken: string;
   refreshToken: string;
   user: {
+    _id: string;
     email: string;
     fullName: string;
     username: string;
+    avatar?: string;
+    bio?: string;
+    postsCount: number;
+    followersCount: number;
+    followingCount: number;
+    totalLikesCount: number;
   };
 }
 
@@ -55,14 +63,23 @@ export const loginUser = async (
 
   await User.findByIdAndUpdate(user._id, { accessToken, refreshToken });
 
+  const stats = await getUserStats(user._id);
+
+  const userData: LoginResult["user"] = {
+    _id: user._id.toString(),
+    email: user.email,
+    fullName: user.fullName,
+    username: user.username,
+    ...stats,
+  };
+
+  if (user.avatar) userData.avatar = user.avatar;
+  if (user.bio) userData.bio = user.bio;
+
   return {
     accessToken,
     refreshToken,
-    user: {
-      email: user.email,
-      fullName: user.fullName,
-      username: user.username,
-    },
+    user: userData,
   };
 };
 
@@ -90,13 +107,22 @@ export const refreshUser = async (
     refreshToken: newRefreshToken,
   });
 
+  const stats = await getUserStats(user._id);
+
+  const userData: LoginResult["user"] = {
+    _id: user._id.toString(),
+    email: user.email,
+    fullName: user.fullName,
+    username: user.username,
+    ...stats,
+  };
+
+  if (user.avatar) userData.avatar = user.avatar;
+  if (user.bio) userData.bio = user.bio;
+
   return {
     accessToken: newAccessToken,
     refreshToken: newRefreshToken,
-    user: {
-      email: user.email,
-      fullName: user.fullName,
-      username: user.username,
-    },
+    user: userData,
   };
 };

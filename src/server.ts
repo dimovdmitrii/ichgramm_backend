@@ -10,6 +10,8 @@ import authRouter from "./routers/auth.router.js";
 import postsRouter from "./routers/post.router.js";
 import likesRouter from "./routers/like.router.js";
 import commentsRouter from "./routers/comment.router.js";
+import usersRouter from "./routers/users.router.js";
+import followsRouter from "./routers/follows.router.js";
 import { verifyAccessToken } from "./utils/jwt.js";
 import { getConversation, createMessage } from "./services/messages.services.js";
 
@@ -28,6 +30,8 @@ const startServer = (): void => {
   app.use("/api/posts", postsRouter);
   app.use("/api/likes", likesRouter);
   app.use("/api/comments", commentsRouter);
+  app.use("/api/users", usersRouter);
+  app.use("/api/follows", followsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

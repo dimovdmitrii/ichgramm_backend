@@ -9,6 +9,8 @@ export interface UserDocument extends Document {
   fullName: string;
   username: string;
   password: string;
+  avatar?: string;
+  bio?: string;
   verify: boolean;
   accessToken?: string;
   refreshToken?: string;
@@ -41,6 +43,15 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
+    },
+    avatar: {
+      type: String,
+      default: "",
+    },
+    bio: {
+      type: String,
+      maxlength: 200,
+      default: "",
     },
     verify: {
       type: Boolean,

@@ -8,9 +8,10 @@
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write src/**/*.js",
-    "start": "npm run build && node dist/index",
+    "start": "NODE_OPTIONS=--max-old-space-size=4096 npm run build:prod && node dist/index",
     "dev": "nodemon src/index",
-    "build": "tsc"
+    "build": "tsc",
+    "build:prod": "tsc --project tsconfig.prod.json"
   },
   "repository": {
     "type": "git",

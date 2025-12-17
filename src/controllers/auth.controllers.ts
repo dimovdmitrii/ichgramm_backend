@@ -19,6 +19,7 @@ import createTokens from "../utils/createTokens.js";
 import { AuthRequest } from "../types/interfaces.js";
 
 import User from "../db/models/User.js";
+import { getUserStats } from "../services/users.services.js";
 
 export const registerController = async (
   req: Request,
@@ -56,13 +57,19 @@ export const getCurrentController: RequestHandler = async (req, res) => {
 
   await User.findByIdAndUpdate(authReq.user._id, { accessToken, refreshToken });
 
+  const stats = await getUserStats(authReq.user._id);
+
   res.json({
     accessToken,
     refreshToken,
     user: {
+      _id: authReq.user._id.toString(),
       email: authReq.user.email,
       fullName: authReq.user.fullName,
       username: authReq.user.username,
+      avatar: authReq.user.avatar,
+      bio: authReq.user.bio,
+      ...stats,
     },
   });
 };

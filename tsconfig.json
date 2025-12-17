@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     // Пропускать проверку типов в библиотеках (экономит кучу RAM)
-    "incremental": true,
+    "incremental": false,
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
@@ -18,9 +18,9 @@
     // and npm install -D @types/node
 
     // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "sourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
     "allowJs": true,
     "checkJs": false,
 
