@@ -24,7 +24,8 @@ const startServer = (): void => {
   const app: Express = express();
 
   app.use(cors());
-  app.use(express.json());
+  // Увеличиваем лимит для JSON запросов (для base64 изображений)
+  app.use(express.json({ limit: "10mb" }));
 
   app.use("/api/auth", authRouter);
   app.use("/api/posts", postsRouter);

@@ -59,18 +59,34 @@ export const getCurrentController: RequestHandler = async (req, res) => {
 
   const stats = await getUserStats(authReq.user._id);
 
+  const userData: {
+    _id: string;
+    email: string;
+    fullName: string;
+    username: string;
+    avatar?: string;
+    bio?: string;
+    website?: string;
+    postsCount: number;
+    followersCount: number;
+    followingCount: number;
+    totalLikesCount: number;
+  } = {
+    _id: authReq.user._id.toString(),
+    email: authReq.user.email,
+    fullName: authReq.user.fullName,
+    username: authReq.user.username,
+    ...stats,
+  };
+
+  if (authReq.user.avatar) userData.avatar = authReq.user.avatar;
+  if (authReq.user.bio) userData.bio = authReq.user.bio;
+  if (authReq.user.website) userData.website = authReq.user.website;
+
   res.json({
     accessToken,
     refreshToken,
-    user: {
-      _id: authReq.user._id.toString(),
-      email: authReq.user.email,
-      fullName: authReq.user.fullName,
-      username: authReq.user.username,
-      avatar: authReq.user.avatar,
-      bio: authReq.user.bio,
-      ...stats,
-    },
+    user: userData,
   });
 };
 

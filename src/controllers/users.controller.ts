@@ -3,6 +3,7 @@ import {
   getUserProfile,
   getUserProfileByUsername,
   updateUserProfile,
+  searchUsersByUsername,
 } from "../services/users.services.js";
 import { AuthRequest } from "../types/interfaces.js";
 import validateBody from "../utils/validateBody.js";
@@ -36,5 +37,18 @@ export const updateProfileController = async (
   validateBody(updateProfileSchema, req.body);
   const updatedUser = await updateUserProfile(req.user._id, req.body);
   res.json(updatedUser);
+};
+
+export const searchUsersController = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  const { q } = req.query;
+  if (!q || typeof q !== "string") {
+    res.status(400).json({ message: "Search query is required" });
+    return;
+  }
+  const users = await searchUsersByUsername(q);
+  res.json(users);
 };
 

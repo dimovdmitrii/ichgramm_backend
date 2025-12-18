@@ -26,6 +26,7 @@ export interface LoginResult {
     username: string;
     avatar?: string;
     bio?: string;
+    website?: string;
     postsCount: number;
     followersCount: number;
     followingCount: number;
@@ -75,6 +76,7 @@ export const loginUser = async (
 
   if (user.avatar) userData.avatar = user.avatar;
   if (user.bio) userData.bio = user.bio;
+  if (user.website) userData.website = user.website;
 
   return {
     accessToken,
@@ -119,6 +121,7 @@ export const refreshUser = async (
 
   if (user.avatar) userData.avatar = user.avatar;
   if (user.bio) userData.bio = user.bio;
+  if (user.website) userData.website = user.website;
 
   return {
     accessToken: newAccessToken,

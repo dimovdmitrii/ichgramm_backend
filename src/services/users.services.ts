@@ -19,6 +19,7 @@ export interface UserProfile extends UserStats {
   username: string;
   avatar?: string;
   bio?: string;
+  website?: string;
   verify: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +43,21 @@ export const getUserByUsername = async (username: string) => {
     throw HttpError(404, "User not found");
   }
   return user;
+};
+
+export const searchUsersByUsername = async (query: string, limit = 10) => {
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
+  const users = await User.find({
+    username: { $regex: query.trim(), $options: "i" },
+  })
+    .select("username fullName avatar")
+    .limit(limit)
+    .sort({ username: 1 });
+
+  return users;
 };
 
 export const getPostsCount = async (
@@ -114,6 +130,7 @@ export const getUserProfile = async (
 
   if (user.avatar) profile.avatar = user.avatar;
   if (user.bio) profile.bio = user.bio;
+  if (user.website) profile.website = user.website;
 
   return profile;
 };
@@ -143,14 +160,32 @@ export const getUserProfileByUsername = async (
 
   if (user.avatar) profile.avatar = user.avatar;
   if (user.bio) profile.bio = user.bio;
+  if (user.website) profile.website = user.website;
 
   return profile;
 };
 
 export const updateUserProfile = async (
   userId: string | Types.ObjectId,
-  updates: { fullName?: string; bio?: string; avatar?: string },
+  updates: {
+    username?: string;
+    fullName?: string;
+    bio?: string;
+    website?: string;
+    avatar?: string;
+  },
 ) => {
+  // Если обновляется username, проверяем уникальность
+  if (updates.username) {
+    const existingUser = await User.findOne({
+      username: updates.username,
+      _id: { $ne: userId },
+    });
+    if (existingUser) {
+      throw HttpError(409, "Username already exist");
+    }
+  }
+
   const user = await User.findByIdAndUpdate(
     userId,
     { $set: updates },

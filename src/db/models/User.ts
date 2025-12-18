@@ -11,6 +11,7 @@ export interface UserDocument extends Document {
   password: string;
   avatar?: string;
   bio?: string;
+  website?: string;
   verify: boolean;
   accessToken?: string;
   refreshToken?: string;
@@ -49,6 +50,11 @@ const userSchema = new Schema(
       default: "",
     },
     bio: {
+      type: String,
+      maxlength: 200,
+      default: "",
+    },
+    website: {
       type: String,
       maxlength: 200,
       default: "",

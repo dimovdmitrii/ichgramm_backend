@@ -18,8 +18,8 @@ export const getConversation = async (
     ],
   })
     .sort({ createdAt: 1 })
-    .populate("sender", "username")
-    .populate("recipient", "username")
+    .populate("sender", "username avatar")
+    .populate("recipient", "username avatar")
     .exec();
 };
 
@@ -44,8 +44,8 @@ export const createMessage = async ({
     text,
   });
 
-  await message.populate("sender", "username");
-  await message.populate("recipient", "username");
+  await message.populate("sender", "username avatar");
+  await message.populate("recipient", "username avatar");
   return message;
 };
 

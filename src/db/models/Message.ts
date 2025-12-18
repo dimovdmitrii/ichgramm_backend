@@ -41,3 +41,4 @@ MessageSchema.post("findOneAndUpdate" as any, handleSaveError);
 const Message = model<MessageDocument>("Message", MessageSchema);
 
 export default Message;
+
