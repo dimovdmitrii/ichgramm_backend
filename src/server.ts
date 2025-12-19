@@ -12,8 +12,12 @@ import likesRouter from "./routers/like.router.js";
 import commentsRouter from "./routers/comment.router.js";
 import usersRouter from "./routers/users.router.js";
 import followsRouter from "./routers/follows.router.js";
+import messagesRouter from "./routers/messages.router.js";
 import { verifyAccessToken } from "./utils/jwt.js";
-import { getConversation, createMessage } from "./services/messages.services.js";
+import {
+  getConversation,
+  createMessage,
+} from "./services/messages.services.js";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
@@ -33,6 +37,7 @@ const startServer = (): void => {
   app.use("/api/comments", commentsRouter);
   app.use("/api/users", usersRouter);
   app.use("/api/follows", followsRouter);
+  app.use("/api/messages", messagesRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
@@ -92,21 +97,28 @@ const startServer = (): void => {
               text: parsed.text,
             });
 
-            const outgoing = {
+            const messageData = {
               type: "message",
+              id: message._id.toString(),
               from: (message.sender as any).username,
               to: (message.recipient as any).username,
               text: message.text,
               createdAt: message.createdAt,
+              fromAvatar: (message.sender as any).avatar,
+              toAvatar: (message.recipient as any).avatar,
             };
 
-            ws.send(JSON.stringify(outgoing));
+            // Отправляем подтверждение отправителю
+            ws.send(JSON.stringify(messageData));
 
-            const recipientSocket = clients.get(
-              String((message.recipient as any)._id),
-            );
-            if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-              recipientSocket.send(JSON.stringify(outgoing));
+            // Отправляем сообщение получателю
+            const recipientId = String((message.recipient as any)._id);
+            const recipientSocket = clients.get(recipientId);
+            if (
+              recipientSocket &&
+              recipientSocket.readyState === WebSocket.OPEN
+            ) {
+              recipientSocket.send(JSON.stringify(messageData));
             }
           }
         } catch (error) {

@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "delete-users": "tsx src/scripts/deleteUserData.ts",
+    "check-db": "tsx src/scripts/checkDatabase.ts",
+    "cleanup-collections": "tsx src/scripts/cleanupCollections.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",

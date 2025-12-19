@@ -13,6 +13,8 @@ export interface UserDocument extends Document {
   bio?: string;
   website?: string;
   verify: boolean;
+  followingCount?: number;
+  followersCount?: number;
   accessToken?: string;
   refreshToken?: string;
   createdAt: Date;
@@ -63,6 +65,16 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    followingCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    followersCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     accessToken: {
       type: String,
     },
@@ -78,6 +90,9 @@ userSchema.post("save", handleSaveError);
 userSchema.pre("findOneAndUpdate" as any, setUpdateSettings);
 
 userSchema.post("findOneAndUpdate" as any, handleSaveError);
+
+// Индекс на username уже создается автоматически через unique: true
+// Дополнительный индекс не нужен
 
 const User = model<UserDocument>("user", userSchema);
 

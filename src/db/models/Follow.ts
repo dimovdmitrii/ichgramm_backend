@@ -29,14 +29,20 @@ const FollowSchema = new Schema<FollowDocument>(
 
 // Уникальный индекс: один пользователь не может подписаться на другого дважды
 FollowSchema.index({ follower: 1, following: 1 }, { unique: true });
+// Отдельные индексы для быстрого поиска по follower и following
+FollowSchema.index({ follower: 1 });
+FollowSchema.index({ following: 1 });
 
 // Предотвращение самоподписки
 FollowSchema.pre("save", function (this: any, next: any) {
-  if (this.follower.toString() === this.following.toString()) {
-    next(new Error("Cannot follow yourself"));
-  } else {
-    next();
+  if (typeof next !== "function") {
+    return;
   }
+  if (this.follower && this.following && this.follower.toString() === this.following.toString()) {
+    const error = new Error("Cannot follow yourself");
+    return next(error);
+  }
+  next();
 });
 
 FollowSchema.post("save", handleSaveError);

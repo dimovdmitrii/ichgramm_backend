@@ -6,13 +6,30 @@ export const toggleFollowController = async (
   req: AuthRequest,
   res: Response,
 ): Promise<void> => {
-  const { username } = req.params;
-  if (!username) {
-    res.status(400).json({ message: "Username is required" });
-    return;
+  try {
+    const { username } = req.params;
+    if (!username) {
+      res.status(400).json({ message: "Username is required" });
+      return;
+    }
+    
+    // Убеждаемся, что req.user._id является ObjectId
+    const followerId = req.user._id;
+    if (!followerId) {
+      res.status(401).json({ message: "User ID not found" });
+      return;
+    }
+    
+    const result = await toggleFollow(followerId, username);
+    res.json(result);
+  } catch (error: any) {
+    console.error("Toggle follow error:", error);
+    const status = error?.status || error?.response?.status || 500;
+    const message = error?.message || error?.response?.data?.message || "Internal server error";
+    res.status(status).json({
+      message,
+    });
   }
-  const result = await toggleFollow(req.user._id, username);
-  res.json(result);
 };
 
 export const getFollowersController = async (
@@ -56,4 +73,5 @@ export const getFollowingController = async (
   const following = await getFollowing(user._id);
   res.json(following);
 };
+
 

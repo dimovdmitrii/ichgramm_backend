@@ -28,6 +28,8 @@ const LikeSchema = new Schema<LikeDocument>(
 );
 
 LikeSchema.index({ post: 1, user: 1 }, { unique: true });
+// Индекс на post для быстрого подсчета лайков
+LikeSchema.index({ post: 1 });
 
 LikeSchema.post("save", handleSaveError);
 LikeSchema.pre("findOneAndUpdate" as any, setUpdateSettings);

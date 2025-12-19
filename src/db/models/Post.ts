@@ -43,6 +43,9 @@ PostSchema.post("save", handleSaveError);
 PostSchema.pre("findOneAndUpdate" as any, setUpdateSettings);
 PostSchema.post("findOneAndUpdate" as any, handleSaveError);
 
+// Индекс на author для быстрого поиска постов пользователя
+PostSchema.index({ author: 1 });
+
 const Post = model<PostDocument>("Post", PostSchema);
 
 export default Post;

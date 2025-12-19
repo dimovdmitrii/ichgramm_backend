@@ -18,4 +18,4 @@ const connectDatabase = async (): Promise<void> => {
     console.log(`Unknow error ${error}`);
   }
 };
-export default connectDatabase;
+export default connectDatabase ;

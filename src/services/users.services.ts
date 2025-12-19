@@ -3,7 +3,9 @@ import User from "../db/models/User.js";
 import Post from "../db/models/Post.js";
 import Like from "../db/models/Like.js";
 import Follow from "../db/models/Follow.js";
+import RecentSearch from "../db/models/RecentSearch.js";
 import HttpError from "../utils/HttpError.js";
+import { checkIfFollowing } from "./follows.services.js";
 
 export interface UserStats {
   postsCount: number;
@@ -50,12 +52,19 @@ export const searchUsersByUsername = async (query: string, limit = 10) => {
     return [];
   }
 
-  const users = await User.find({
-    username: { $regex: query.trim(), $options: "i" },
-  })
+  const trimmedQuery = query.trim();
+  
+  // Оптимизация: используем $regex только если запрос длиннее 2 символов
+  // Для коротких запросов используем точное совпадение начала строки (быстрее)
+  const searchQuery = trimmedQuery.length <= 2
+    ? { username: { $regex: `^${trimmedQuery}`, $options: "i" } }
+    : { username: { $regex: trimmedQuery, $options: "i" } };
+
+  const users = await User.find(searchQuery)
     .select("username fullName avatar")
     .limit(limit)
-    .sort({ username: 1 });
+    .sort({ username: 1 })
+    .lean(); // Используем lean() для быстрого получения простых объектов
 
   return users;
 };
@@ -81,9 +90,25 @@ export const getFollowingCount = async (
 export const getTotalLikesCount = async (
   userId: string | Types.ObjectId,
 ): Promise<number> => {
-  const userPosts = await Post.find({ author: userId }).select("_id");
-  const postIds = userPosts.map((post) => post._id);
-  return Like.countDocuments({ post: { $in: postIds } });
+  // Оптимизация: используем поле likesCount из постов напрямую через простой запрос
+  // Это намного быстрее, чем агрегация или запросы к коллекции likes
+  try {
+    // Используем простой запрос с суммированием вместо агрегации для лучшей производительности
+    const posts = await Post.find({ author: userId })
+      .select("likesCount")
+      .lean();
+    
+    if (posts.length === 0) {
+      return 0;
+    }
+    
+    // Суммируем likesCount из всех постов
+    return posts.reduce((total, post) => total + (post.likesCount || 0), 0);
+  } catch (error) {
+    // Fallback: если произошла ошибка, возвращаем 0
+    console.error("Error in getTotalLikesCount:", error);
+    return 0;
+  }
 };
 
 export const getUserStats = async (
@@ -137,7 +162,8 @@ export const getUserProfile = async (
 
 export const getUserProfileByUsername = async (
   username: string,
-): Promise<UserProfile> => {
+  currentUserId?: string | Types.ObjectId,
+): Promise<UserProfile & { isFollowing?: boolean }> => {
   const user = await User.findOne({ username }).select(
     "-password -accessToken -refreshToken",
   );
@@ -147,7 +173,7 @@ export const getUserProfileByUsername = async (
 
   const stats = await getUserStats(user._id);
 
-  const profile: UserProfile = {
+  const profile: UserProfile & { isFollowing?: boolean } = {
     _id: user._id,
     email: user.email,
     fullName: user.fullName,
@@ -161,6 +187,25 @@ export const getUserProfileByUsername = async (
   if (user.avatar) profile.avatar = user.avatar;
   if (user.bio) profile.bio = user.bio;
   if (user.website) profile.website = user.website;
+
+  // Проверяем, подписан ли текущий пользователь на этого пользователя
+  // Оптимизация: используем более быстрый запрос напрямую с .lean() и .select()
+  if (currentUserId && currentUserId.toString() !== user._id.toString()) {
+    try {
+      const follow = await Follow.findOne({
+        follower: currentUserId,
+        following: user._id,
+      })
+        .select("_id")
+        .lean();
+      profile.isFollowing = !!follow;
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+      profile.isFollowing = false;
+    }
+  } else {
+    profile.isFollowing = false;
+  }
 
   return profile;
 };
@@ -197,4 +242,68 @@ export const updateUserProfile = async (
   }
 
   return user;
+};
+
+export const addRecentSearch = async (
+  userId: string | Types.ObjectId,
+  searchedUserId: string | Types.ObjectId,
+) => {
+  try {
+    // Проверяем, что пользователь не ищет сам себя
+    if (userId.toString() === searchedUserId.toString()) {
+      return;
+    }
+
+    // Проверяем существование записи
+    const existingSearch = await RecentSearch.findOne({
+      user: userId,
+      searchedUser: searchedUserId,
+    });
+
+    if (existingSearch) {
+      // Обновляем время последнего поиска
+      existingSearch.updatedAt = new Date();
+      await existingSearch.save();
+    } else {
+      // Создаем новую запись
+      await RecentSearch.create({
+        user: userId,
+        searchedUser: searchedUserId,
+      });
+    }
+
+    // Ограничиваем количество недавних поисков до 5
+    const allSearches = await RecentSearch.find({ user: userId })
+      .sort({ updatedAt: -1 })
+      .select("_id");
+
+    if (allSearches.length > 5) {
+      const searchesToDelete = allSearches.slice(5);
+      const idsToDelete = searchesToDelete.map((s) => s._id);
+      await RecentSearch.deleteMany({ _id: { $in: idsToDelete } });
+    }
+  } catch (error: any) {
+    console.error("Add recent search service error:", error);
+    throw HttpError(500, error.message || "Failed to add recent search");
+  }
+};
+
+export const getRecentSearches = async (
+  userId: string | Types.ObjectId,
+): Promise<Array<{ _id: string; username: string; avatar?: string }>> => {
+  const recentSearches = await RecentSearch.find({ user: userId })
+    .sort({ updatedAt: -1 })
+    .limit(5)
+    .populate("searchedUser", "username avatar")
+    .exec();
+
+  return recentSearches.map((search: any) => ({
+    _id: search.searchedUser._id.toString(),
+    username: search.searchedUser.username,
+    avatar: search.searchedUser.avatar || null,
+  }));
+};
+
+export const clearRecentSearches = async (userId: string | Types.ObjectId) => {
+  await RecentSearch.deleteMany({ user: userId });
 };
