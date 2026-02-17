@@ -15,7 +15,10 @@ messagesRouter.get(
       const otherUsername = req.params.username;
 
       if (!userId) {
-        throw new HttpError(401, "Unauthorized");
+        throw HttpError(401, "Unauthorized");
+      }
+      if (!otherUsername) {
+        throw HttpError(400, "Username is required");
       }
 
       const messages = await getConversation(userId, otherUsername);
@@ -45,7 +48,7 @@ messagesRouter.get("/chats", authenticate, async (req, res, next) => {
     const userId = req.user?._id?.toString();
 
     if (!userId) {
-      throw new HttpError(401, "Unauthorized");
+      throw HttpError(401, "Unauthorized");
     }
 
     // Получаем все сообщения, где пользователь является отправителем или получателем
