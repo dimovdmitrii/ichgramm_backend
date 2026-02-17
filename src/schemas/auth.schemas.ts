@@ -26,7 +26,10 @@ export const registerSchema = z.object({
   password: z
     .string()
     .min(8, "Password must have at least 8 characters")
-    .regex(passwordRegexp, "Password must have least 1 letter and 1 number"),
+    .regex(
+      passwordRegexp,
+      "Password must contain at least one uppercase, one lowercase, one number and one special character (@$!%*#?&)",
+    ),
 });
 
 export type RegisterPayload = z.infer<typeof registerSchema>;

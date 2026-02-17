@@ -8,10 +8,10 @@ const errorHandler = (
   res: Response,
   __: NextFunction,
 ): void => {
-  const { status = 500, message = "server error" } = error;
-  res.status(status).json({
-    message,
-  });
+  const { status = 500, message = "server error", field } = error;
+  const body: { message: string; field?: string } = { message };
+  if (field) body.field = field;
+  res.status(status).json(body);
 };
 
 export default errorHandler;
