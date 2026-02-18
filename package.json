@@ -1,7 +1,7 @@
 {
   "name": "ichgramm_backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend for ichgramm — full stack social media app (React, Node.js, Express, TypeScript, MongoDB, WebSockets, JWT).",
   "main": "index.js",
   "scripts": {
     "delete-users": "tsx src/scripts/deleteUserData.ts",

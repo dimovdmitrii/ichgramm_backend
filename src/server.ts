@@ -31,6 +31,8 @@ const startServer = (): void => {
   // Увеличиваем лимит для JSON запросов (для base64 изображений)
   app.use(express.json({ limit: "10mb" }));
 
+  app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok" }));
+
   app.use("/api/auth", authRouter);
   app.use("/api/posts", postsRouter);
   app.use("/api/likes", likesRouter);
