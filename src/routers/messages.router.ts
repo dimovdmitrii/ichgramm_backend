@@ -5,7 +5,9 @@ import  HttpError  from "../utils/HttpError.js";
 
 const messagesRouter = Router();
 
-// Получить историю переписки с пользователем
+// Получить историю переписки с пользователем.
+// Важно: на клиенте при открытии чата вызывать этот endpoint (а не только WebSocket),
+// чтобы история загружалась на всех устройствах, включая мобильные.
 messagesRouter.get(
   "/conversation/:username",
   authenticate,

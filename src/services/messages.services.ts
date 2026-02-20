@@ -1,20 +1,32 @@
+import { Types } from "mongoose";
 import Message, { MessageDocument } from "../db/models/Message.js";
 import User from "../db/models/User.js";
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 export const getConversation = async (
   userId: string,
   otherUsername: string,
 ): Promise<MessageDocument[]> => {
-  const otherUser = await User.findOne({ username: otherUsername });
+  if (!otherUsername?.trim()) return [];
+
+  const otherUser = await User.findOne({
+    username: new RegExp(`^${escapeRegex(otherUsername.trim())}$`, "i"),
+  });
 
   if (!otherUser) {
     return [];
   }
 
+  const currentUserId = new Types.ObjectId(userId);
+  const otherUserId = otherUser._id;
+
   return Message.find({
     $or: [
-      { sender: userId, recipient: otherUser._id },
-      { sender: otherUser._id, recipient: userId },
+      { sender: currentUserId, recipient: otherUserId },
+      { sender: otherUserId, recipient: currentUserId },
     ],
   })
     .sort({ createdAt: 1 })
@@ -32,7 +44,9 @@ export const createMessage = async ({
   recipientUsername: string;
   text: string;
 }): Promise<MessageDocument> => {
-  const recipient = await User.findOne({ username: recipientUsername });
+  const recipient = await User.findOne({
+    username: new RegExp(`^${escapeRegex(recipientUsername.trim())}$`, "i"),
+  });
 
   if (!recipient) {
     throw new Error("Recipient not found");

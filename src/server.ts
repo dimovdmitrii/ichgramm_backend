@@ -1,4 +1,5 @@
 import http from "http";
+import path from "path";
 import express, { Express } from "express";
 import cors from "cors";
 import { WebSocketServer, WebSocket } from "ws";
@@ -28,8 +29,13 @@ const startServer = (): void => {
   const app: Express = express();
 
   app.use(cors());
-  // Увеличиваем лимит для JSON запросов (для base64 изображений)
-  app.use(express.json({ limit: "10mb" }));
+  app.use(express.json({ limit: "1mb" }));
+
+  // Локальное хранилище фото постов (файлы не в БД)
+  app.use(
+    "/uploads",
+    express.static(path.join(process.cwd(), "uploads"))
+  );
 
   app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok" }));
 

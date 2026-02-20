@@ -38,6 +38,8 @@ MessageSchema.post("save", handleSaveError);
 MessageSchema.pre("findOneAndUpdate" as any, setUpdateSettings);
 MessageSchema.post("findOneAndUpdate" as any, handleSaveError);
 
+MessageSchema.index({ sender: 1, recipient: 1, createdAt: 1 });
+
 const Message = model<MessageDocument>("Message", MessageSchema);
 
 export default Message;

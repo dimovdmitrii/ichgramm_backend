@@ -56,4 +56,4 @@ export const updatePost = (
   }).populate("author", "username fullName email avatar");
 
 export const deletePost = (postId: string, authorId: Types.ObjectId) =>
-  Post.findOneAndDelete({ _id: postId, author: authorId });
+  Post.findOneAndDelete({ _id: postId, author: authorId }).then((doc) => doc ?? null);
